@@ -2,7 +2,10 @@ package com.revature.orm.models;
 
 import com.revature.orm.annotations.Column;
 import com.revature.orm.annotations.Id;
+import com.revature.orm.annotations.Table;
 
+
+@Table(tableName = "user")
 public class User {
 
     @Id(columnName = "id")

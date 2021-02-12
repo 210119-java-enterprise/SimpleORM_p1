@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Metamodel<T> {
 
+
     private Class<T> clazz;
 
     public static <T> Metamodel<T> of(Class<T> clazz) {
@@ -17,6 +18,11 @@ public class Metamodel<T> {
 
     public Metamodel(Class<T> clazz) {
         this.clazz = clazz;
+    }
+
+    public List<TableClass> getTables() {
+        List<TableClass> tableClassList = new ArrayList<>();
+        Class[] clazzes =
     }
 
     public IdField getPrimaryKey() {

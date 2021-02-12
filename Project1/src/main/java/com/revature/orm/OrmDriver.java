@@ -10,6 +10,7 @@ import java.util.List;
 public class OrmDriver {
 
     public static void main(String[] args) {
+
         Metamodel<User> userMetamodel = Metamodel.of(User.class);
 
         IdField idField = userMetamodel.getPrimaryKey();
@@ -21,4 +22,6 @@ public class OrmDriver {
             System.out.printf("The User class contains a column called %s; which maps to the column with the name %s\n", columnField.getName(), columnField.getColumnName());
         }
     }
+
+    // Expose the configuration object and entity manager and session, don't expose the metamodel
 }

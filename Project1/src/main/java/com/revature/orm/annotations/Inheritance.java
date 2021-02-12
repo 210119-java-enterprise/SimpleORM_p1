@@ -2,10 +2,21 @@ package com.revature.orm.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
+import java.lang.annotation.Target;
+// DO THIS LATER
+@Target()
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Inheritance {
 }
+
+// Hibernate supports three basic inheritance mapping strategies
+    // Table per class hierarchy
+    // Table per subclass
+    // Table per concrete class
+
+// Hibernate also supports a fourth, slightly different kind of polymorphism:
+    // implicit polymorphism
+
 
 /*
 *
