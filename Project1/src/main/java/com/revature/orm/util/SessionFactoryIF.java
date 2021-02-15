@@ -8,7 +8,8 @@ public interface SessionFactoryIF {
     //ClassMetadata getClassMetadata(Class entityClass);
     Session getCurrentSession();
     boolean isClosed();
-    Session openSession();
-    Session openSession(Connection connection);
+    SessionIF openSession();
+    SessionIF openSession(Connection connection);
+
 
 }
