@@ -6,6 +6,7 @@ import java.sql.Connection;
 public interface SessionIF {
 
     Transaction beginTransaction();
+    Transaction getTransaction();
     void clear();
     Connection close();
     void delete(Object object);
@@ -19,6 +20,10 @@ public interface SessionIF {
     void read();
     void readAll(String table);
     void update(Object object);
+    Object get(Class clazz, Serializable id) ;
+    Object get(String entityName, Serializable id);
+
+
 
 
 

@@ -5,7 +5,7 @@ import java.sql.Connection;
 public class SessionFactory implements SessionFactoryIF {
 
     private ConnectionPool connectionPool = null;
-    private SessionIF sessionIF;
+    //private SessionIF sessionIF;
 
     private SessionFactory(ConnectionPool connectionPool) {
         super();
@@ -45,7 +45,7 @@ public class SessionFactory implements SessionFactoryIF {
     // For now, I won't have a discriminator, but I might try to find a way to have one later.
     public SessionIF openSession() {
 
-        sessionIF = Session.create(connectionPool.getConnection());
+        SessionIF sessionIF = Session.create(connectionPool.getConnection());
 
         return sessionIF;
 
