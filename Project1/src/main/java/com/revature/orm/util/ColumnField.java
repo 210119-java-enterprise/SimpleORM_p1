@@ -1,12 +1,14 @@
 package com.revature.orm.util;
 
 import com.revature.orm.annotations.Column;
+import org.reflections.Reflections;
 
 import java.lang.reflect.Field;
 
 public class ColumnField {
 
     private Field field;
+
 
     public ColumnField(Field field) {
         if (field.getAnnotation(Column.class) == null) {

@@ -5,17 +5,19 @@ import java.sql.Connection;
 public class SessionFactory implements SessionFactoryIF {
 
     private ConnectionPool connectionPool = null;
+    private MetamodelIF metamodelIF = null;
     //private SessionIF sessionIF;
 
-    private SessionFactory(ConnectionPool connectionPool) {
+    private SessionFactory(ConnectionPool connectionPool, MetamodelIF metamodelIF) {
         super();
         this.connectionPool = connectionPool;
+        this.metamodelIF = metamodelIF;
 
     }
 
     // Will probably put more into this. For now, this just associates a connection pool with this session factory that I can easily grab later
-    public static SessionFactory create(ConnectionPool connectionPool) {
-        return new SessionFactory(connectionPool);
+    public static SessionFactory create(ConnectionPool connectionPool, MetamodelIF metamodelIF) {
+        return new SessionFactory(connectionPool, metamodelIF);
     }
 
     // Destroy this SessionFactory and release all resources (caches, connection pools, etc).
@@ -45,7 +47,7 @@ public class SessionFactory implements SessionFactoryIF {
     // For now, I won't have a discriminator, but I might try to find a way to have one later.
     public SessionIF openSession() {
 
-        SessionIF sessionIF = Session.create(connectionPool.getConnection());
+        SessionIF sessionIF = Session.create(connectionPool.getConnection(), metamodelIF);
 
         return sessionIF;
 

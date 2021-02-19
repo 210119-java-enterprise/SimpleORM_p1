@@ -6,15 +6,17 @@ import java.sql.Connection;
 public class Session implements SessionIF{
 
     private Connection connection;
+    private MetamodelIF metamodelIF;
 
-    private Session(Connection connection){
+    private Session(Connection connection, MetamodelIF metamodelIF){
         this.connection = connection;
+        this.metamodelIF = metamodelIF;
 
     }
 
-    public static Session create(Connection connection){
+    public static Session create(Connection connection, MetamodelIF metamodelIF){
 
-        return new Session(connection);
+        return new Session(connection, metamodelIF);
 
     }
     // Begin a unit of work and return the assocated Transaction object. If a new underlying transaction is required, begin the transaction. Otherwise continue the new work in the
