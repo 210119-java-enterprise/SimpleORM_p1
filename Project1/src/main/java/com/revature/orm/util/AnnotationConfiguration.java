@@ -1,6 +1,10 @@
 package com.revature.orm.util;
 
 import com.revature.orm.annotations.Entity;
+import com.revature.orm.exceptions.InvalidClassPathException;
+import com.revature.orm.exceptions.InvalidConnectionException;
+import com.revature.orm.exceptions.InvalidEntityException;
+import com.revature.orm.exceptions.InvalidParametersException;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 
@@ -22,22 +26,21 @@ public class AnnotationConfiguration {
 
     // I need to make a new variable that will, by default, be in src/main/java and look for the class there. If I need to go deeper into packages, then I will change the string
     private String classPath = null;
-    private AnnotationConfiguration (ConnectionPool connectionPool) {
+    public AnnotationConfiguration() {
         super();
-        this.connectionPool = connectionPool;
-        //annotationConfiguration = new AnnotationConfiguration();
     }
     // DELETE AFTER YOU SUCCESSFULLY GET THIS TO WORK. WILL BE RELYING ON PROPERTIES FILE
     public AnnotationConfiguration configure(String url, String username, String password) {
         //BasicConnectionPool basicConnectionPool = new BasicConnectionPool();
         try {
             connectionPool = BasicConnectionPool.create(url, username, password);
-            return new AnnotationConfiguration(connectionPool);
+            return this;
         }catch(SQLException e) {
             e.printStackTrace();
+            throw new InvalidConnectionException();
         }
-        return null;
     }
+    // WILL USE THIS AFTER I DETERMINE THAT THE CONNECTION WORKS. REMEMBER TO COMMENT OUT THE CODE IN BASIC CONNECTION POOL THAT GRABS FROM THE PROPERTIES FILE
 //    public AnnotationConfiguration configure(){
 //        try {
 //            connectionPool = BasicConnectionPool.create();
@@ -69,7 +72,7 @@ public class AnnotationConfiguration {
         if(packageName == null || packageName.trim().equals(""))
         {
             // I just want to make sure they know that they should make sure to include a value. I want to use my own exceptions to make sure they know what they did wrong and how to fix it.
-            throw RuntimeException;
+            throw new InvalidParametersException("Invalid package name. The package name passed was either null or empty");
         }
         classPath = packageName;
 
@@ -78,7 +81,7 @@ public class AnnotationConfiguration {
         if (URLsContainingPackagesStartingWithTheClassPath.isEmpty())
         {
             // I want to make sure that the packagename actually exists. If this collection is empty, then there are no URLs from the classpath containing packages starting with the packageName
-            throw RuntimeException
+            throw new InvalidClassPathException("Invalid package name. The package name passed '" + packageName + "' cannot be found or doesn't exist.");
         }
 
 
@@ -95,19 +98,24 @@ public class AnnotationConfiguration {
 
         //If I understand this correctly, I already checked that the package exists. That is good. Now I am checking subtypes exist (maybe) and annotations exist (yes). The example
         // on Baeldung and the example on their github are somewhat different and I am still trying to figure out how to do this properly.
+
+        if(clazz == null) {
+            throw new InvalidParametersException("Invalid class name. The class name passed was null.");
+        }
         Reflections reflections = new Reflections(classPath);
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
         if (!annotated.contains(clazz.getClass()))
         {
             // The class is not an Entity, so I can't do anything with this. At least for now. All I care about is that I get passed a class that is also a table. Remember, very simple for now.
-            throw RuntimeException
+            throw new InvalidEntityException("Invalid class. The class either doesn't exist or the class you are passing was not given an @Entity annotation.");
+            //throw new InvalidClassPathException("Invalid class name. The class name passed '" + clazz.toString() + "' cannot be found or doesn't exist.");
         }
         // So we found out that the class does have the Entity annotation. Now you have to check everything else in the class. This is where it gets hard.
         metamodelIF = metamodelIF.checkForCorrectness(clazz);
 
         if (metamodelIF == null){
             // The annotations in this file are not correct.
-            throw RuntimeException
+            throw new InvalidEntityException();
         }
         // Concatanate the class path
         classPath = classPath + clazz;
@@ -122,14 +130,12 @@ public class AnnotationConfiguration {
         if (connectionPool == null)
         {
             // throw an exception
-            System.out.println("Your connection is null");
-            return null;
+            throw new InvalidConnectionException("Invalid connection. You did not set up a connection for this session factory.");
         }
         else if (classPath == null)
         {
             // throw an exception
-            System.out.println("Your classpath is null");
-            return null;
+            throw new InvalidClassPathException("Invalid classpath. You did not set up a class path.");
         }
         SessionFactoryIF sessionFactoryIF = SessionFactory.create(connectionPool, metamodelIF);
 

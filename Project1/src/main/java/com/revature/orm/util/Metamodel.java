@@ -1,18 +1,18 @@
 package com.revature.orm.util;
 
-import com.revature.orm.annotations.Column;
-import com.revature.orm.annotations.Id;
+import com.revature.orm.annotations.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Metamodel<T> implements MetamodelIF<T>{
+public class Metamodel<T>{
 
 
     private Class<T> clazz;
-    private List<ColumnField> columnFieldList;
-    private IdField idField;
+    //private List<ColumnField> columnFieldList;
+   // private IdField idField;
 
 
 //    public static <T> Metamodel<T> of(Class<T> clazz) {
@@ -37,25 +37,41 @@ public class Metamodel<T> implements MetamodelIF<T>{
 *
 *
 * */
-    protected boolean getPrimaryKey() {
+    protected TableClass getTableName() {
+
+        Table tableClass = clazz.getAnnotation(Table.class);
+        if(tableClass != null) {
+            return new TableClass(clazz);
+        }
+        return null;
+    }
+
+    protected EntityClass getEntityName() {
+        Entity entity = clazz.getAnnotation(Entity.class);
+        if(entity != null) {
+            return new EntityClass(clazz);
+        }
+        return null;
+    }
+
+    protected IdField getPrimaryKey() {
 
         Field[] fields = clazz.getDeclaredFields();
         for(Field field: fields) {
             Id primaryKey = field.getAnnotation(Id.class);
             if (primaryKey != null) {
-                this.idField  = new IdField(field);
-                return true;
+                return new IdField(field);
             }
         }
 
-        throw new RuntimeException("Did not find a field annotated with @Id in: " + clazz.getName());
+        return null;
     }
     protected boolean getPrimaryKeyGetterAndSetter() {
 
         return true;
     }
 
-    protected boolean getColumns() {
+    protected List<ColumnField> getColumns() {
         List<ColumnField> columnFieldList = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for(Field field : fields) {
@@ -66,9 +82,17 @@ public class Metamodel<T> implements MetamodelIF<T>{
         }
 
         if (columnFieldList.isEmpty()) {
-            throw new RuntimeException("No columns found in: " + clazz.getName());
+
+            return null;
         }
-        this.columnFieldList = columnFieldList;
-        return true;
+        return columnFieldList;
+    }
+
+    protected boolean checkForNoColumnAnnotation() {
+
+        if(clazz.isAnnotationPresent(NoColumns.class)) {
+            return true;
+        }
+        return false;
     }
 }

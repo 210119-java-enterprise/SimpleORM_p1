@@ -6,10 +6,10 @@ public interface SessionFactoryIF {
 
     void close();
     //ClassMetadata getClassMetadata(Class entityClass);
-    Session getCurrentSession();
+    //Session getCurrentSession();
     boolean isClosed();
     SessionIF openSession();
-    SessionIF openSession(Connection connection);
+    //SessionIF openSession(Connection connection);
 
 
 }

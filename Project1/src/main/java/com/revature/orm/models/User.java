@@ -6,7 +6,7 @@ import com.revature.orm.annotations.Id;
 import com.revature.orm.annotations.Table;
 
 @Entity
-@Table(tableName = "user")
+@Table(tableName = "app_user")
 public class User {
 
     @Id(columnName = "id")

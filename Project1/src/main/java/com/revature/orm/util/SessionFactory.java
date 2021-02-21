@@ -25,18 +25,20 @@ public class SessionFactory implements SessionFactoryIF {
     public void close() {
 
         connectionPool = null;
+        metamodelIF = null;
     }
     //ClassMetadata getClassMetadata(Class entityClass);
 
     // Obtains the current session
-    Session getCurrentSession() {
-
-    }
+//    Session getCurrentSession() {
+//
+//    }
 
     // Is this factory already closed?
-    boolean isClosed() {
+    @Override
+    public boolean isClosed() {
 
-        return connectionPool == null;
+        return connectionPool == null && metamodelIF == null;
 
     }
 
@@ -55,7 +57,7 @@ public class SessionFactory implements SessionFactoryIF {
 
     // Open a session with your own connection. Think about not providing this, since this can get overcomplicated and I would rather them deal with the connection pool that was
     // created prior.
-    public SessionIF openSession(Connection connection) {
-
-    }
+//    public SessionIF openSession(Connection connection) {
+//
+//    }
 }

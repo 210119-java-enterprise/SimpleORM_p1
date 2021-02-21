@@ -1,5 +1,7 @@
 package com.revature.orm.util;
 
+import com.revature.orm.exceptions.InvalidEntityException;
+
 import java.io.Serializable;
 import java.sql.Connection;
 
@@ -7,11 +9,26 @@ public class Session implements SessionIF{
 
     private Connection connection;
     private MetamodelIF metamodelIF;
+    private Transaction transaction;
 
+    private Session() {
+        super();
+    }
     private Session(Connection connection, MetamodelIF metamodelIF){
         this.connection = connection;
         this.metamodelIF = metamodelIF;
+        transaction = null;
 
+        // You have the meta model. You just need to check if the primary key and columns are correct. You can do this my getting the id field and getting each individual column. Remember to check the id's type and each column's type and that
+        // it matches with the table's types.
+        if(!checkForEntityCorrectnessWtihdDatabaseTable()) {
+            throw new InvalidEntityException("Your Entity does not match with your Database table or your Database Table does not exist");
+        }
+    }
+
+    private boolean checkForEntityCorrectnessWtihdDatabaseTable()
+    {
+            
     }
 
     public static Session create(Connection connection, MetamodelIF metamodelIF){
@@ -23,6 +40,12 @@ public class Session implements SessionIF{
     // context of the existing underlying transaction. The class of the returned Transaction object is determined by the property hibernate.transaction_factory (Ignore that part)
     @Override
     public Transaction beginTransaction() {
+        if(transaction == null) {
+
+            transaction = new JDBCTransaction(this);
+        }
+
+        return transaction;
 
     }
     // Get the Transaction instance associated with this session. The class of the returned Transaction object is determined by the property hibernate.transaction_factory
@@ -65,6 +88,10 @@ public class Session implements SessionIF{
     // Persist the given transient instance, first assigning a generated identifier
     @Override
     public Serializable save(Object object) {
+
+
+
+
 
     }
     // Persist the given transient instance, first assigning a generated identifier

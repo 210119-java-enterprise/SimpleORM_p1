@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 
-public class TableClass {
+public class TableClass{
     private Class clazz;
 
     public TableClass(Class clazz) {

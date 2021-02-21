@@ -2,6 +2,10 @@ package com.revature.orm.util;
 
 public class JDBCTransaction implements Transaction {
 
+    Session session = null;
+    public JDBCTransaction(Session session) {
+        this.session = session;
+    }
     // Begin a new transaction
     @Override
     public void begin(){
