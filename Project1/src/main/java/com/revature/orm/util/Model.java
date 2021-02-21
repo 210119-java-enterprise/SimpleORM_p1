@@ -2,11 +2,12 @@ package com.revature.orm.util;
 
 import com.revature.orm.exceptions.InvalidEntityException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
     private IdField idField = null;
-    private List<ColumnField> columnFieldList = null;
+    private ArrayList<ColumnField> columnFieldList = new ArrayList<>();
     private TableClass tableClass = null;
     private EntityClass entityClass = null;
 
@@ -15,7 +16,7 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
     public Model(Class<T> clazz){
 
     }
-    private Model(IdField idField, List<ColumnField> columnFieldList)
+    private Model(IdField idField, ArrayList<ColumnField> columnFieldList)
     {
         this.idField = idField;
         this.columnFieldList = columnFieldList;
@@ -68,7 +69,7 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
 
     private boolean checkForColumns(Metamodel<T> metamodel) {
         columnFieldList = metamodel.getColumns();
-        if (columnFieldList != null  ) {
+        if (columnFieldList.size() != 0 ) {
             return true;
         }
         else {
@@ -85,7 +86,8 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         return idField;
     }
 
-    public List<ColumnField> getColumnFieldList() {
+    public ArrayList<ColumnField> getColumnFieldList() {
+
         return columnFieldList;
     }
 

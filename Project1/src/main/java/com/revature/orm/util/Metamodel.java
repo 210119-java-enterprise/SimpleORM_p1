@@ -71,8 +71,8 @@ public class Metamodel<T>{
         return true;
     }
 
-    protected List<ColumnField> getColumns() {
-        List<ColumnField> columnFieldList = new ArrayList<>();
+    protected ArrayList<ColumnField> getColumns() {
+        ArrayList<ColumnField> columnFieldList = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for(Field field : fields) {
             Column column = field.getAnnotation(Column.class);

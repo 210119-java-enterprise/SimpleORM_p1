@@ -4,6 +4,12 @@ import com.revature.orm.exceptions.InvalidEntityException;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Session implements SessionIF{
 
@@ -28,7 +34,40 @@ public class Session implements SessionIF{
 
     private boolean checkForEntityCorrectnessWtihdDatabaseTable()
     {
+
+            // The only way I can think of checking this is by selecting each column name from the tablename or entity name(if there is no table name) and if they messed up somewhere, then that means something is wrong with the entity
+            // and the database table. They are NOT the same
+            int numColumns = 1;
+            if (metamodelIF.getColumnFieldList() != null) {
+                numColumns += metamodelIF.getColumnFieldList().size();
+            }
+            String numQuestionMarks = new String(new char[numColumns]).replace("\0","?,");
+            numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
+            String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+            String sql = "Select " + numQuestionMarks + "From " + tableName;
+        try {
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
+
+
+            for (int i = 2; i <= numColumns; i++) {
+                ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
+                pstmt.setString(i, columnField1.getColumnName());
+            }
+            ResultSet resultSet = pstmt.executeQuery();
             
+            // Ask Wezley about this. This is so weird. The IDE is not recognizing that ColumnField objects are in the ArrayList while at the same time recognizing that the ArrayList stores ColumnFieldObjects
+//            for(Object columnField : metamodelIF.getColumnFieldList()) {
+//                    ColumnField columnField1 = (ColumnField)columnField;
+//                    pstmt.setString(i, columnField1.getColumnName()
+//
+//            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new InvalidEntityException("Your Entity does not match your table.");
+        }
+
     }
 
     public static Session create(Connection connection, MetamodelIF metamodelIF){
@@ -128,6 +167,8 @@ public class Session implements SessionIF{
 //    }
     @Override
     public void update(Object object) {
-
+metamodelIF.getEntityClass().
     }
+
+
 }
