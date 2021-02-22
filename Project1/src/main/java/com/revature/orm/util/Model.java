@@ -18,16 +18,19 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
 
 
 
-    public Model(Class<T> clazz){
+    public Model(){
+        super();
 
     }
-    private Model(IdField idField, ArrayList<ColumnField> columnFieldList, TableClass tableClass, EntityClass entityClass, Constructor<T> constructor)
+    private Model(IdField idField, ArrayList<ColumnField> columnFieldList, TableClass tableClass, EntityClass entityClass, Constructor<T> constructor, ArrayList<Method> getterMethods, ArrayList<Method> setterMethods)
     {
         this.idField = idField;
         this.columnFieldList = columnFieldList;
         this.tableClass = tableClass;
         this.entityClass = entityClass;
         this.constructor = constructor;
+        this.getterMethods = getterMethods;
+        this.setterMethods = setterMethods;
     }
     public Model<T> checkForCorrectness(Class<T> clazz) {
         Metamodel<T> metamodel = new Metamodel<>(clazz);
@@ -53,7 +56,7 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         //checkForColumns(metamodel);
         //metamodel.getPrimaryKey().getcol().;
         //metamodel.getColumns();
-        return new Model<T>(this.idField, this.columnFieldList, this.tableClass, this.entityClass, this.constructor);
+        return new Model<T>(this.idField, this.columnFieldList, this.tableClass, this.entityClass, this.constructor, this.getterMethods, this.setterMethods);
     }
 
     private void checkForTableName(Metamodel<T> metamodel) {

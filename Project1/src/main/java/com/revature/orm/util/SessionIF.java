@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface SessionIF {
 
-    void clear();
-    Connection close();
+
+    void close();
     void delete(Object object);
     void save(Object object);
     void update(Object object);

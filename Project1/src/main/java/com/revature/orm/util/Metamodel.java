@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Metamodel<T>{
 
@@ -105,9 +106,9 @@ public class Metamodel<T>{
         Method[] methods = clazz.getDeclaredMethods();
         for(Method method : methods) {
 
-                if (!method.getName().equals("set" + idField.getName())) {
+                if (!method.getName().toLowerCase(Locale.ROOT).equals("set" + idField.getName().toLowerCase(Locale.ROOT))) {
                         for(ColumnField columnField : columnFieldArrayList) {
-                            if (method.getName().equals("set" + columnField.getName())) {
+                            if (method.getName().toLowerCase(Locale.ROOT).equals("set" + columnField.getName().toLowerCase(Locale.ROOT))) {
                                 methodArrayList.add(method);
                                 numOfSetterStillNeeded-=1;
                                 break;
@@ -131,11 +132,16 @@ public class Metamodel<T>{
     protected ArrayList<Method> getGetters(IdField idField, ArrayList<ColumnField> columnFieldArrayList) {
         ArrayList<Method> methodArrayList = new ArrayList<>();
         int numOfGettersStillNeeded = 1 + columnFieldArrayList.size();
+
         Method[] methods = clazz.getDeclaredMethods();
         for(Method method : methods) {
-            if (!method.getName().equals("get" + idField.getName())) {
+
+
+
+
+            if (!method.getName().toLowerCase(Locale.ROOT).equals("get" + idField.getName().toLowerCase(Locale.ROOT))) {
                 for(ColumnField columnField : columnFieldArrayList) {
-                    if (method.getName().equals("get" + columnField.getName())) {
+                    if (method.getName().toLowerCase(Locale.ROOT).equals("get" + columnField.getName().toLowerCase(Locale.ROOT))) {
                         methodArrayList.add(method);
                         numOfGettersStillNeeded-=1;
                         break;
@@ -152,6 +158,7 @@ public class Metamodel<T>{
             ArrayList<Method> emptyArrayList = new ArrayList<>();
             return emptyArrayList;
         }
+
         return methodArrayList;
     }
 

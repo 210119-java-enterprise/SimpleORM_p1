@@ -1,15 +1,42 @@
 package com.revature.orm;
 
 import com.revature.orm.models.User;
-import com.revature.orm.util.ColumnField;
-import com.revature.orm.util.IdField;
-import com.revature.orm.util.Metamodel;
+import com.revature.orm.util.*;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 public class OrmDriver {
 
+    public static SessionFactoryIF sessionFactoryIF;
+
     public static void main(String[] args) {
+
+        sessionFactoryIF = new AnnotationConfiguration().configure("jdbc:postgresql://java-enterprise-2101192.cb6ljnanwiyj.us-east-2.rds.amazonaws.com:5432/P1DB","postgres","Revature2020!")
+                .addPackage("com.revature.orm.models").addAnnotatedClass(User.class).buildSessionFactory();
+
+        SessionIF sessionIF = sessionFactoryIF.openSession();
+        User user = new User();
+        user.setId(2);
+        user.setFirstName("First");
+        user.setLastName("Last");
+        user.setAge(30);
+
+//        sessionIF.save(user);
+//
+//        sessionIF.close();
+//
+//        sessionIF = sessionFactoryIF.openSession();
+//        List<Object> objectList = sessionIF.getAll();
+//        System.out.println(objectList.toString());
+//        sessionIF.close();
+//
+//        sessionIF = sessionFactoryIF.openSession();
+        sessionIF.delete(user);
+
+        sessionIF.close();
+
+
 
         // Order of making a basic example
         /*

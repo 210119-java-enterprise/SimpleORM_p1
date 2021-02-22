@@ -10,6 +10,7 @@ import org.reflections.util.ClasspathHelper;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 
@@ -102,15 +103,19 @@ public class AnnotationConfiguration {
         if(clazz == null) {
             throw new InvalidParametersException("Invalid class name. The class name passed was null.");
         }
+        System.out.println(classPath);
         Reflections reflections = new Reflections(classPath);
-        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
-        if (!annotated.contains(clazz.getClass()))
+
+        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class); //Bug with version 0.9.12, switching to version 0.9.11
+
+        if (!Arrays.toString(Arrays.stream(annotated.toArray()).toArray()).contains("class " + clazz.getName()))
         {
             // The class is not an Entity, so I can't do anything with this. At least for now. All I care about is that I get passed a class that is also a table. Remember, very simple for now.
             throw new InvalidEntityException("Invalid class. The class either doesn't exist or the class you are passing was not given an @Entity annotation.");
             //throw new InvalidClassPathException("Invalid class name. The class name passed '" + clazz.toString() + "' cannot be found or doesn't exist.");
         }
         // So we found out that the class does have the Entity annotation. Now you have to check everything else in the class. This is where it gets hard.
+        metamodelIF = new Model();
         metamodelIF = metamodelIF.checkForCorrectness(clazz);
 
         if (metamodelIF == null){

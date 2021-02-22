@@ -2,16 +2,12 @@ package com.revature.orm.util;
 
 import com.revature.orm.exceptions.InvalidEntityException;
 
+import javax.xml.transform.Result;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
 public class Session implements SessionIF{
 
@@ -44,20 +40,22 @@ public class Session implements SessionIF{
             if (metamodelIF.getColumnFieldList() != null) {
                 numColumns += metamodelIF.getColumnFieldList().size();
             }
-            String numQuestionMarks = new String(new char[numColumns]).replace("\0","?,");
-            numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
-            String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
-            String sql = "Select " + numQuestionMarks + "From " + tableName;
-        try {
-            PreparedStatement pstmt = connection.prepareStatement(sql);
-            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
 
+
+            String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+            String querySQL = "SELECT ";
+        try {
+            Statement statement = connection.createStatement();
+            querySQL = querySQL + metamodelIF.getIdField().getColumnName();
 
             for (int i = 2; i <= numColumns; i++) {
                 ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
-                pstmt.setString(i, columnField1.getColumnName());
+                querySQL = querySQL + "," + columnField1.getColumnName();
             }
-            ResultSet resultSet = pstmt.executeQuery();
+            querySQL = querySQL + " FROM " + tableName;
+
+            ResultSet resultSet = statement.executeQuery(querySQL);
+
             entityLinkedList = mapResultSet(resultSet);
             return true;
             // Ask Wezley about this. This is so weird. The IDE is not recognizing that ColumnField objects are in the ArrayList while at the same time recognizing that the ArrayList stores ColumnFieldObjects
@@ -81,20 +79,14 @@ public class Session implements SessionIF{
     }
 
 
-    // Completely clear the session. Does this mean there is more associated with the session then just the connection?
+
+    // A little confused by this one. It says to End the session by releasing the JDBC connection and cleaning up. Why do I return the connection associated with this session then?
     @Override
-    public void clear() {
+    public void close() {
         connectionPool.releaseConnection(connection);
         connection = null;
         metamodelIF = null;
         entityLinkedList = null;
-
-    }
-    // A little confused by this one. It says to End the session by releasing the JDBC connection and cleaning up. Why do I return the connection associated with this session then?
-    @Override
-    public Connection close() {
-        connectionPool.releaseConnection(connection);
-        return connection;
 
     }
     // Remove a persistent instance from the datastore. I don't know how well this will work, since I only get an object and I don't know how I am going to delete a specific
@@ -106,19 +98,23 @@ public class Session implements SessionIF{
         }
 
         String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
-        String sql = "DELETE FROM " + tableName + "WHERE ? = ?";
+        String querySQL = "DELETE FROM " + tableName + " WHERE ";
+
         try {
-            PreparedStatement pstmt = connection.prepareStatement(sql);
-            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
+            Statement statement = connection.createStatement();
+
+            querySQL = querySQL + metamodelIF.getIdField().getColumnName() + " = ";
+
 
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                Method method = (Method) metamodelIF.getSetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
-                    pstmt.setObject(2, method.invoke(object));
+                Method method = (Method) metamodelIF.getGetterMethods().get(i);
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
+                    querySQL = querySQL + method.invoke(object);
                     break;
                 }
             }
-            int rowsAffected = pstmt.executeUpdate();
+            System.out.println(querySQL);
+            int rowsAffected = statement.executeUpdate(querySQL);
             if(rowsAffected == 0) {
                 throw new RuntimeException("For some reason the data was not deleted from the row");
             }
@@ -141,23 +137,32 @@ public class Session implements SessionIF{
         if (metamodelIF.getColumnFieldList() != null) {
             numColumns += metamodelIF.getColumnFieldList().size();
         }
+        System.out.println(numColumns);
         String numQuestionMarks = new String(new char[numColumns]).replace("\0","?,");
         numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
         String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+        String querySQL = "INSERT INTO " + tableName + "(";
         String sql = "INSERT INTO " + tableName + "(" + numQuestionMarks +") " + "VALUES (" + numQuestionMarks + ")";
         try {
+            Statement statement = connection.createStatement();
             PreparedStatement pstmt = connection.prepareStatement(sql);
+            querySQL = querySQL + metamodelIF.getIdField().getColumnName();
             pstmt.setString(1, metamodelIF.getIdField().getColumnName());
 
 
             for (int i = 2; i <= numColumns; i++) {
                 ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
+                querySQL = querySQL + "," + columnField1.getColumnName();
                 pstmt.setString(i, columnField1.getColumnName());
             }
-
+            querySQL = querySQL + ") VALUES (";
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                Method method = (Method) metamodelIF.getSetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                Method method = (Method) metamodelIF.getGetterMethods().get(i);
+                System.out.println(method.getName().toLowerCase(Locale.ROOT));
+                System.out.println(metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT));
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
+                    System.out.println("I made it!!! ");
+                    querySQL = querySQL +  method.invoke(object);
                     pstmt.setObject(numColumns + 1, method.invoke(object));
                     break;
                 }
@@ -167,14 +172,27 @@ public class Session implements SessionIF{
                 ColumnField columnField1 = (ColumnField) metamodelIF.getColumnFieldList().get(i - 2);
                 for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
                     Method method = (Method) metamodelIF.getGetterMethods().get(j);
-                    if (method.getName().equals("get" + columnField1.getName())) {
+                    if (method.getName().toLowerCase(Locale.ROOT).equals("get" + columnField1.getName().toLowerCase(Locale.ROOT))) {
+                        System.out.println(columnField1.getType());
+                        if(columnField1.getType().toString().equals("class java.lang.String") || columnField1.getType().toString().equals("class java.lang.Character"))
+                        {
+                            querySQL = querySQL + ",'" + method.invoke(object) + "'";
+                        }
+                        else {
+                            querySQL = querySQL + "," + method.invoke(object);
+                        }
+
                         pstmt.setObject(numColumns + 2 + (i - 2), method.invoke(object));
                         break;
                     }
                 }
             }
+            querySQL = querySQL + ")";
+            System.out.println(querySQL);
+            System.out.println(pstmt.toString());
+            int rowsInserted = statement.executeUpdate(querySQL);
 
-            int rowsInserted = pstmt.executeUpdate();
+            //int rowsInserted = pstmt.executeUpdate();
             if(rowsInserted == 0) {
                 throw new RuntimeException("For some reason the data was not saved to the table");
             }
@@ -194,7 +212,7 @@ public class Session implements SessionIF{
             }
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 method = (Method) metamodelIF.getSetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     break;
                 }
             }
@@ -244,7 +262,7 @@ public class Session implements SessionIF{
 
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 Method method = (Method) metamodelIF.getSetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     pstmt.setObject(2, method.invoke(object));
                     break;
                 }
@@ -257,7 +275,7 @@ public class Session implements SessionIF{
                 currentParameterIndex+=1;
                     for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
                         Method method = (Method) metamodelIF.getGetterMethods().get(j);
-                        if (method.getName().equals("get" + columnField1.getName())) {
+                        if (method.getName().toLowerCase(Locale.ROOT).equals("get" + columnField1.getName().toLowerCase(Locale.ROOT))) {
                             pstmt.setObject(currentParameterIndex, method.invoke(object));
                             currentParameterIndex+=1;
                             break;
@@ -269,7 +287,7 @@ public class Session implements SessionIF{
             currentParameterIndex+=1;
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 Method method = (Method) metamodelIF.getSetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     pstmt.setObject(currentParameterIndex, method.invoke(object));
                     break;
                 }
@@ -320,10 +338,10 @@ public class Session implements SessionIF{
                 Object object = constructor.newInstance();
                 for(int i = 0; i < metamodelIF.getSetterMethods().size(); i++) {
                     Method method = (Method)metamodelIF.getSetterMethods().get(i);
-                    if (!method.getName().equals("set" + metamodelIF.getIdField().getName())) {
+                    if (!method.getName().toLowerCase(Locale.ROOT).equals("set" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                         for(int j = 0; j< metamodelIF.getColumnFieldList().size(); j++) {
                             ColumnField columnField = (ColumnField) metamodelIF.getColumnFieldList().get(j);
-                            if (method.getName().equals("set" + columnField.getName())) {
+                            if (method.getName().toLowerCase(Locale.ROOT).equals("set" + columnField.getName().toLowerCase(Locale.ROOT))) {
                                 method.invoke(object, rs.getObject(columnField.getColumnName()));
                                 break;
                             }
