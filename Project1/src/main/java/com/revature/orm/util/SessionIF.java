@@ -13,7 +13,7 @@ public interface SessionIF {
     void delete(String entityName, Object object);
     Connection disconnect();
     boolean isOpen();
-    Serializable save(Object object);
+    void save(Object object);
     Serializable save(String entityName, Object object);
     String createSQLQuery(String queryString);
     void create(Object object);

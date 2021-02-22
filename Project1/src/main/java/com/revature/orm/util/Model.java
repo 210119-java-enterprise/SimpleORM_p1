@@ -2,6 +2,8 @@ package com.revature.orm.util;
 
 import com.revature.orm.exceptions.InvalidEntityException;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,16 +12,22 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
     private ArrayList<ColumnField> columnFieldList = new ArrayList<>();
     private TableClass tableClass = null;
     private EntityClass entityClass = null;
+    private Constructor<T> constructor = null;
+    private ArrayList<Method> getterMethods = new ArrayList<>();
+    private ArrayList<Method> setterMethods = new ArrayList<>();
 
 
 
     public Model(Class<T> clazz){
 
     }
-    private Model(IdField idField, ArrayList<ColumnField> columnFieldList)
+    private Model(IdField idField, ArrayList<ColumnField> columnFieldList, TableClass tableClass, EntityClass entityClass, Constructor<T> constructor)
     {
         this.idField = idField;
         this.columnFieldList = columnFieldList;
+        this.tableClass = tableClass;
+        this.entityClass = entityClass;
+        this.constructor = constructor;
     }
     public Model<T> checkForCorrectness(Class<T> clazz) {
         Metamodel<T> metamodel = new Metamodel<>(clazz);
@@ -32,11 +40,20 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         {
             throw new InvalidEntityException("Invalid Entity. You do not have at least one @Column annotation. If your Entity only contains a primary key, add an @NoColumns to your Entity.");
         }
+        if(!checkForNoArgsConstructor(metamodel)) {
+            throw new InvalidEntityException("Invalid Entity. You do not have a no args constructor in your Entity.");
+        }
+        if(!checkForGetters(metamodel, idField, columnFieldList)) {
+            throw new InvalidEntityException("Invalid Entity. You are missing a Getter for a field that you either annotated with @Id or @Column.");
+        }
+        if(!checkForSetters(metamodel, idField, columnFieldList)) {
+            throw new InvalidEntityException("Invalid Entity. You are missing a Setter for a field that you either annotated with @Id or @Column");
+        }
         //checkPrimaryKey(metamodel);
         //checkForColumns(metamodel);
         //metamodel.getPrimaryKey().getcol().;
         //metamodel.getColumns();
-        return new Model<T>(this.idField, this.columnFieldList);
+        return new Model<T>(this.idField, this.columnFieldList, this.tableClass, this.entityClass, this.constructor);
     }
 
     private void checkForTableName(Metamodel<T> metamodel) {
@@ -82,6 +99,34 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         }
     }
 
+    private boolean checkForNoArgsConstructor(Metamodel<T> metamodel) {
+        constructor = metamodel.getNoArgsConstructor();
+        if(constructor != null) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkForSetters(Metamodel<T> metamodel, IdField idField, ArrayList<ColumnField> columnFieldList) {
+        setterMethods = metamodel.getSetters(idField, columnFieldList);
+        if(setterMethods.size() != 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private boolean checkForGetters(Metamodel<T> metamodel, IdField idField, ArrayList<ColumnField> columnFieldList) {
+        getterMethods = metamodel.getGetters(idField, columnFieldList);
+        if(getterMethods.size() != 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     public IdField getIdField() {
         return idField;
     }
@@ -97,6 +142,18 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
 
     public EntityClass getEntityClass() {
         return entityClass;
+    }
+
+    public Constructor<T> getConstructor() {
+        return constructor;
+    }
+
+    public ArrayList<Method> getGetterMethods() {
+        return getterMethods;
+    }
+
+    public ArrayList<Method> getSetterMethods() {
+        return setterMethods;
     }
 
 }

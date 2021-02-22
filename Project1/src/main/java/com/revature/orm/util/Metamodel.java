@@ -3,7 +3,9 @@ package com.revature.orm.util;
 import com.revature.orm.annotations.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +88,71 @@ public class Metamodel<T>{
             return null;
         }
         return columnFieldList;
+    }
+
+    protected Constructor<T> getNoArgsConstructor() {
+        try {
+            Constructor<T> constructor = clazz.getConstructor();
+            return constructor;
+        }catch (Exception e) {
+            return null;
+        }
+
+    }
+    protected ArrayList<Method> getSetters(IdField idField, ArrayList<ColumnField> columnFieldArrayList) {
+        ArrayList<Method> methodArrayList = new ArrayList<>();
+        int numOfSetterStillNeeded = 1 + columnFieldArrayList.size();
+        Method[] methods = clazz.getDeclaredMethods();
+        for(Method method : methods) {
+
+                if (!method.getName().equals("set" + idField.getName())) {
+                        for(ColumnField columnField : columnFieldArrayList) {
+                            if (method.getName().equals("set" + columnField.getName())) {
+                                methodArrayList.add(method);
+                                numOfSetterStillNeeded-=1;
+                                break;
+                            }
+                        }
+                }
+                else {
+                        methodArrayList.add(method);
+                        numOfSetterStillNeeded-=1;
+                }
+        }
+
+        if (numOfSetterStillNeeded != 0) {
+            ArrayList<Method> emptyArrayList = new ArrayList<>();
+            return emptyArrayList;
+        }
+
+        return methodArrayList;
+    }
+
+    protected ArrayList<Method> getGetters(IdField idField, ArrayList<ColumnField> columnFieldArrayList) {
+        ArrayList<Method> methodArrayList = new ArrayList<>();
+        int numOfGettersStillNeeded = 1 + columnFieldArrayList.size();
+        Method[] methods = clazz.getDeclaredMethods();
+        for(Method method : methods) {
+            if (!method.getName().equals("get" + idField.getName())) {
+                for(ColumnField columnField : columnFieldArrayList) {
+                    if (method.getName().equals("get" + columnField.getName())) {
+                        methodArrayList.add(method);
+                        numOfGettersStillNeeded-=1;
+                        break;
+                    }
+                }
+            }
+            else {
+                methodArrayList.add(method);
+                numOfGettersStillNeeded-=1;
+            }
+        }
+
+        if (numOfGettersStillNeeded != 0) {
+            ArrayList<Method> emptyArrayList = new ArrayList<>();
+            return emptyArrayList;
+        }
+        return methodArrayList;
     }
 
     protected boolean checkForNoColumnAnnotation() {

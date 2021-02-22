@@ -3,6 +3,8 @@ package com.revature.orm.util;
 import com.revature.orm.exceptions.InvalidEntityException;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,6 +18,7 @@ public class Session implements SessionIF{
     private Connection connection;
     private MetamodelIF metamodelIF;
     private Transaction transaction;
+    private LinkedList<Object> entityLinkedList;
 
     private Session() {
         super();
@@ -55,7 +58,8 @@ public class Session implements SessionIF{
                 pstmt.setString(i, columnField1.getColumnName());
             }
             ResultSet resultSet = pstmt.executeQuery();
-            
+            entityLinkedList = mapResultSet(resultSet);
+            return true;
             // Ask Wezley about this. This is so weird. The IDE is not recognizing that ColumnField objects are in the ArrayList while at the same time recognizing that the ArrayList stores ColumnFieldObjects
 //            for(Object columnField : metamodelIF.getColumnFieldList()) {
 //                    ColumnField columnField1 = (ColumnField)columnField;
@@ -126,12 +130,54 @@ public class Session implements SessionIF{
     }
     // Persist the given transient instance, first assigning a generated identifier
     @Override
-    public Serializable save(Object object) {
+    public void save(Object object) {
+
+        int numColumns = 1;
+        if (metamodelIF.getColumnFieldList() != null) {
+            numColumns += metamodelIF.getColumnFieldList().size();
+        }
+        String numQuestionMarks = new String(new char[numColumns]).replace("\0","?,");
+        numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
+        String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+        String sql = "INSERT INTO " + tableName + "(" + numQuestionMarks +") " + "VALUES (" + numQuestionMarks + ")";
+        try {
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
 
 
+            for (int i = 2; i <= numColumns; i++) {
+                ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
+                pstmt.setString(i, columnField1.getColumnName());
+            }
 
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    pstmt.setObject(numColumns + 1, method.invoke(object));
+                    break;
+                }
+            }
 
+            for (int i = 2; i <= numColumns; i++) {
+                ColumnField columnField1 = (ColumnField) metamodelIF.getColumnFieldList().get(i - 2);
+                for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
+                    Method method = (Method) metamodelIF.getGetterMethods().get(j);
+                    if (method.getName().equals("get" + columnField1.getName())) {
+                        pstmt.setObject(numColumns + 2 + (i - 2), method.invoke(object));
+                        break;
+                    }
+                }
+            }
 
+            int rowsInserted = pstmt.executeUpdate();
+            if(rowsInserted == 0) {
+                throw new RuntimeException("For some reason the data was not saved to the table");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new InvalidEntityException("Your Entity does not match your table.");
+        }
     }
     // Persist the given transient instance, first assigning a generated identifier
     @Override
@@ -170,5 +216,38 @@ public class Session implements SessionIF{
 metamodelIF.getEntityClass().
     }
 
+    // Method to return a LinkedList of Objects
+    private LinkedList<Object> mapResultSet(ResultSet rs) throws SQLException {
+        try {
+            LinkedList<Object> objects = new LinkedList<>();
+            //Class<?> clazz = Class.forName(metamodelIF.getEntityClass().getName());
+            Constructor<?> constructor = metamodelIF.getConstructor();
+            while(rs.next()) {
+                Object object = constructor.newInstance();
+                for(int i = 0; i < metamodelIF.getSetterMethods().size(); i++) {
+                    Method method = (Method)metamodelIF.getSetterMethods().get(i);
+                    if (!method.getName().equals("set" + metamodelIF.getIdField().getName())) {
+                        for(int j = 0; j< metamodelIF.getColumnFieldList().size(); j++) {
+                            ColumnField columnField = (ColumnField) metamodelIF.getColumnFieldList().get(j);
+                            if (method.getName().equals("set" + columnField.getName())) {
+                                method.invoke(object, rs.getObject(columnField.getColumnName()));
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        method.invoke(object, rs.getObject(metamodelIF.getIdField().getColumnName()));
+                    }
+                }
+                objects.add(object);
+            }
+            return objects;
+
+        }catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Issue creating a new instance of the class");
+        }
+
+    }
 
 }
