@@ -9,37 +9,42 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public class Metamodel<T>{
 
 
     private Class<T> clazz;
-    //private List<ColumnField> columnFieldList;
-   // private IdField idField;
 
-
-//    public static <T> Metamodel<T> of(Class<T> clazz) {
-//        return new Metamodel<>(clazz);
-//    }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected Metamodel(){
         super();
 
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     protected Metamodel(Class<T> clazz) {
         this.clazz = clazz;
     }
 
-//    public List<TableClass> getTables() {
-//        List<TableClass> tableClassList = new ArrayList<>();
-//        Class[] clazzes =
-//    }
-
-/*
-*
-*
-* */
+    /**
+     *
+     *
+     * @return
+     * */
     protected TableClass getTableName() {
 
         Table tableClass = clazz.getAnnotation(Table.class);
@@ -48,7 +53,11 @@ public class Metamodel<T>{
         }
         return null;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected EntityClass getEntityName() {
         Entity entity = clazz.getAnnotation(Entity.class);
         if(entity != null) {
@@ -56,7 +65,11 @@ public class Metamodel<T>{
         }
         return null;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected IdField getPrimaryKey() {
 
         Field[] fields = clazz.getDeclaredFields();
@@ -69,11 +82,12 @@ public class Metamodel<T>{
 
         return null;
     }
-    protected boolean getPrimaryKeyGetterAndSetter() {
 
-        return true;
-    }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected ArrayList<ColumnField> getColumns() {
         ArrayList<ColumnField> columnFieldList = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
@@ -90,7 +104,11 @@ public class Metamodel<T>{
         }
         return columnFieldList;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected Constructor<T> getNoArgsConstructor() {
         try {
             Constructor<T> constructor = clazz.getConstructor();
@@ -100,6 +118,11 @@ public class Metamodel<T>{
         }
 
     }
+    /**
+     *
+     *
+     * @return
+     * */
     protected ArrayList<Method> getSetters(IdField idField, ArrayList<ColumnField> columnFieldArrayList) {
         ArrayList<Method> methodArrayList = new ArrayList<>();
         int numOfSetterStillNeeded = 1 + columnFieldArrayList.size();
@@ -128,7 +151,11 @@ public class Metamodel<T>{
 
         return methodArrayList;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected ArrayList<Method> getGetters(IdField idField, ArrayList<ColumnField> columnFieldArrayList) {
         ArrayList<Method> methodArrayList = new ArrayList<>();
         int numOfGettersStillNeeded = 1 + columnFieldArrayList.size();
@@ -161,7 +188,11 @@ public class Metamodel<T>{
 
         return methodArrayList;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     protected boolean checkForNoColumnAnnotation() {
 
         if(clazz.isAnnotationPresent(NoColumns.class)) {

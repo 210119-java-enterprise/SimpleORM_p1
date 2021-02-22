@@ -7,35 +7,19 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public @interface Id {
-
-    public String columnName();
+    /**
+     *
+     *
+     * @return
+     * */
+    String columnName();
 }
 
-
-/*
-*
-*Annotate the id column using @Id.
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-
-@Entity
-@Table(name = "company")
-public class Company implements Serializable {
-
-  @Id
-  @Column(name = "id")
-  private int id;
-
-...
-}
-*
-* */

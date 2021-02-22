@@ -7,5 +7,12 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public @interface NoColumns {
 }

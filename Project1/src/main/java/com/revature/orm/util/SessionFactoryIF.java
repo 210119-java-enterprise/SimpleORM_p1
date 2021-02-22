@@ -1,15 +1,33 @@
 package com.revature.orm.util;
 
 import java.sql.Connection;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public interface SessionFactoryIF {
-
+    /**
+     *
+     *
+     * @return
+     * */
     void close();
-    //ClassMetadata getClassMetadata(Class entityClass);
-    //Session getCurrentSession();
+    /**
+     *
+     *
+     * @return
+     * */
     boolean isClosed();
+    /**
+     *
+     *
+     * @return
+     * */
     SessionIF openSession();
-    //SessionIF openSession(Connection connection);
+
 
 
 }

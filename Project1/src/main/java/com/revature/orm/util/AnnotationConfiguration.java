@@ -13,24 +13,31 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public class AnnotationConfiguration {
-
-    // Use the mappings and properties specified in an application resource named hibernate.cfg.xml (Obviously change this to a file you would use. Probably look for a configuration
-    // That would include a username, password, and path to a database. Where is that properties file? I don't want to go any complicated than that because Hibernate deals with file
-    // type that I never heard of and don't have time to learn. Remember, make it simple. By default, this will be inside of src/main/resources/application.properties. Else
-    // use the Overloaded method
-    //private AnnotationConfiguration annotationConfiguration;
     private ConnectionPool connectionPool = null;
     private MetamodelIF metamodelIF = null;
-   //private SessionFactoryIF sessionFactoryIF = null;
-
-    // I need to make a new variable that will, by default, be in src/main/java and look for the class there. If I need to go deeper into packages, then I will change the string
     private String classPath = null;
+    /**
+     *
+     *
+     * @return
+     * */
     public AnnotationConfiguration() {
         super();
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     // WILL USE THIS AFTER I DETERMINE THAT THE CONNECTION WORKS. REMEMBER TO COMMENT OUT THE CODE IN BASIC CONNECTION POOL THAT GRABS FROM THE PROPERTIES FILE
     public AnnotationConfiguration configure(){
         try {
@@ -42,6 +49,11 @@ public class AnnotationConfiguration {
         }
 
     }
+    /**
+     *
+     *
+     * @return
+     * */
     public AnnotationConfiguration configure(String propertiesPath) {
         try {
             connectionPool = BasicConnectionPool.create(propertiesPath);
@@ -53,8 +65,11 @@ public class AnnotationConfiguration {
 
 
     }
-    // Will probably need this because the developer will organize their classes into packages. Read package level metadata, accepts the package name as a string and returns
-    // the annotationconfiguration object
+    /**
+     *
+     *
+     * @return
+     * */
     public AnnotationConfiguration addPackage(String packageName){
 
         // I am concatenating two strings, the original classpath and the package that the class will be located in
@@ -81,8 +96,11 @@ public class AnnotationConfiguration {
         return this;
 
     }
-    // This is the class you are looking through for any and all annotations. Make sure that the annotations are actually correct!
-    // Read a mapping from the class annotation metadata. Accepts a persistentClass- the mapped class. Returns the annotationconfiguration object
+    /**
+     *
+     *
+     * @return
+     * */
     public AnnotationConfiguration addAnnotatedClass(Class clazz) {
         // Check if the class exists! Figure out how to do that!!!
         // Check that the correct annotations exist!!! This is where this gets a little tough. Also, I have to figure out if you have to use this thing called
@@ -118,9 +136,11 @@ public class AnnotationConfiguration {
         return this;
     }
 
-    // Instantiate a new SessionFactory, using the properties and mappings in this configuration. The SessionFactory will be immutable, so changes made to the Configuration after building
-    // the SessionFactory will not affect it. Basically make sure that everything is configured before calling this and any changes made to the Configuration object after building
-    // the SessionFactory will not affect it
+    /**
+     *
+     *
+     * @return
+     * */
     public SessionFactoryIF buildSessionFactory() {
 
         if (connectionPool == null)

@@ -10,7 +10,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public class BasicConnectionPool implements ConnectionPool{
 
 
@@ -18,7 +24,11 @@ public class BasicConnectionPool implements ConnectionPool{
     private List<Connection> usedConnections = new ArrayList<>();
     private static int INITIAL_POOL_SIZE =  10;
 
-    // Will probably need to change this to allow for different databases to get in. Just include this for now. I think it makes sure you have the postgresql dependency prior.
+    /**
+     *
+     *
+     * @return
+     * */
     static {
         try {
             Class.forName("org.postgresql.Driver");
@@ -26,21 +36,33 @@ public class BasicConnectionPool implements ConnectionPool{
             e.printStackTrace();
         }
     }
+    /**
+     *
+     *
+     * @return
+     * */
     public BasicConnectionPool()
     {
         super();
 
     }
 
-    // I don't want them to be able to access this because the create method will deal with setting everything up
+    /**
+     *
+     *
+     * @return
+     * */
     private BasicConnectionPool(List<Connection> connectionPool) {
 
         this.connectionPool = connectionPool;
     }
 
 
-    // This is VERY temporary. Just to check that I can get a connection. Will accept no parameters later on and just have the other no-args constructor deal with setting up the
-    // url, username, and password when we first create that object. The main goal is to make it so there is no passing back and forth between classes the url, username, and password
+    /**
+     *
+     *
+     * @return
+     * */
     public static BasicConnectionPool create() throws SQLException {
          Properties props = new Properties();
         try {
@@ -58,6 +80,11 @@ public class BasicConnectionPool implements ConnectionPool{
 
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     public static BasicConnectionPool create(String propertiesPath) throws SQLException {
         Properties props = new Properties();
         try {
@@ -76,6 +103,11 @@ public class BasicConnectionPool implements ConnectionPool{
 
 
 
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public Connection getConnection() {
         Connection connection = connectionPool.remove(connectionPool.size() - 1);
@@ -83,12 +115,22 @@ public class BasicConnectionPool implements ConnectionPool{
         return connection;
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public boolean releaseConnection(Connection connection) {
         connectionPool.add(connection);
         return usedConnections.remove(connection);
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public boolean destroyAllConnections() {
 
@@ -104,10 +146,20 @@ public class BasicConnectionPool implements ConnectionPool{
         return false;
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     private static Connection createConnection(Properties props) throws SQLException {
         return DriverManager.getConnection(props.getProperty("url"), props.getProperty("admin-usr"), props.getProperty("admin-pw"));
     }
 
+    /**
+     *
+     *
+     * @return
+     * */
     public int getSize() {
         return connectionPool.size() + usedConnections.size();
     }

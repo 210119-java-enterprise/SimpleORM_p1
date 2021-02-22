@@ -6,7 +6,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
     private IdField idField = null;
     private ArrayList<ColumnField> columnFieldList = new ArrayList<>();
@@ -17,11 +23,20 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
     private ArrayList<Method> setterMethods = new ArrayList<>();
 
 
-
+    /**
+     *
+     *
+     * @return
+     * */
     public Model(){
         super();
 
     }
+    /**
+     *
+     *
+     * @return
+     * */
     private Model(IdField idField, ArrayList<ColumnField> columnFieldList, TableClass tableClass, EntityClass entityClass, Constructor<T> constructor, ArrayList<Method> getterMethods, ArrayList<Method> setterMethods)
     {
         this.idField = idField;
@@ -32,6 +47,11 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         this.getterMethods = getterMethods;
         this.setterMethods = setterMethods;
     }
+    /**
+     *
+     *
+     * @return
+     * */
     public Model<T> checkForCorrectness(Class<T> clazz) {
         Metamodel<T> metamodel = new Metamodel<>(clazz);
         //Model<T> model = new Model<>(clazz);
@@ -52,20 +72,25 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         if(!checkForSetters(metamodel, idField, columnFieldList)) {
             throw new InvalidEntityException("Invalid Entity. You are missing a Setter for a field that you either annotated with @Id or @Column");
         }
-        //checkPrimaryKey(metamodel);
-        //checkForColumns(metamodel);
-        //metamodel.getPrimaryKey().getcol().;
-        //metamodel.getColumns();
+
         return new Model<T>(this.idField, this.columnFieldList, this.tableClass, this.entityClass, this.constructor, this.getterMethods, this.setterMethods);
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private void checkForTableName(Metamodel<T> metamodel) {
 
         tableClass = metamodel.getTableName();
         entityClass = metamodel.getEntityName();
 
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkPrimaryKey( Metamodel<T> metamodel) {
 
         idField = metamodel.getPrimaryKey();
@@ -78,15 +103,11 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
 
     }
 
-    private boolean checkPrimaryKeyGetterAndSetter(Metamodel<T> metamodel) {
-        if (metamodel.getPrimaryKeyGetterAndSetter()) {
-                return true;
-        }
-        else {
-            return false;
-        }
-    }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkForColumns(Metamodel<T> metamodel) {
         columnFieldList = metamodel.getColumns();
         if (columnFieldList.size() != 0 ) {
@@ -101,7 +122,11 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
             return false;
         }
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkForNoArgsConstructor(Metamodel<T> metamodel) {
         constructor = metamodel.getNoArgsConstructor();
         if(constructor != null) {
@@ -109,7 +134,11 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
         }
         return false;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkForSetters(Metamodel<T> metamodel, IdField idField, ArrayList<ColumnField> columnFieldList) {
         setterMethods = metamodel.getSetters(idField, columnFieldList);
         if(setterMethods.size() != 0) {
@@ -119,7 +148,11 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
             return false;
         }
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkForGetters(Metamodel<T> metamodel, IdField idField, ArrayList<ColumnField> columnFieldList) {
         getterMethods = metamodel.getGetters(idField, columnFieldList);
         if(getterMethods.size() != 0) {
@@ -129,32 +162,60 @@ public class Model<T> extends Metamodel<T> implements MetamodelIF<T>{
             return false;
         }
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public IdField getIdField() {
         return idField;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public ArrayList<ColumnField> getColumnFieldList() {
 
         return columnFieldList;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public TableClass getTableClass() {
         return tableClass;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public EntityClass getEntityClass() {
         return entityClass;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public Constructor<T> getConstructor() {
         return constructor;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public ArrayList<Method> getGetterMethods() {
         return getterMethods;
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public ArrayList<Method> getSetterMethods() {
         return setterMethods;
     }

@@ -8,29 +8,51 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
-
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public class Session implements SessionIF{
 
     private Connection connection;
     private ConnectionPool connectionPool;
     private MetamodelIF metamodelIF;
     private LinkedList<Object> entityLinkedList;
-
+    /**
+     *
+     *
+     * @return
+     * */
     private Session() {
         super();
     }
+    /**
+     *
+     *
+     * @return
+     * */
     private Session(ConnectionPool connectionPool, Connection connection, MetamodelIF metamodelIF){
         this.connectionPool = connectionPool;
         this.connection = connection;
         this.metamodelIF = metamodelIF;
 
-        // You have the meta model. You just need to check if the primary key and columns are correct. You can do this my getting the id field and getting each individual column. Remember to check the id's type and each column's type and that
-        // it matches with the table's types.
+        /**
+         *
+         *
+         * @return
+         * */
         if(!checkForEntityCorrectnessWtihdDatabaseTable()) {
             throw new InvalidEntityException("Your Entity does not match with your Database table or your Database Table does not exist");
         }
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     private boolean checkForEntityCorrectnessWtihdDatabaseTable()
     {
 
@@ -71,7 +93,11 @@ public class Session implements SessionIF{
         }
 
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     public static Session create(ConnectionPool connectionPool, Connection connection, MetamodelIF metamodelIF){
 
         return new Session(connectionPool, connection, metamodelIF);
@@ -80,7 +106,11 @@ public class Session implements SessionIF{
 
 
 
-    // A little confused by this one. It says to End the session by releasing the JDBC connection and cleaning up. Why do I return the connection associated with this session then?
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public void close() {
         connectionPool.releaseConnection(connection);
@@ -89,8 +119,11 @@ public class Session implements SessionIF{
         entityLinkedList = null;
 
     }
-    // Remove a persistent instance from the datastore. I don't know how well this will work, since I only get an object and I don't know how I am going to delete a specific
-    // row from the data or if this is just used to delete an entire table data or the table itself?
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public void delete(Object object) {
         if(object == null) {
@@ -147,7 +180,11 @@ public class Session implements SessionIF{
         }
 
     }
-    // Persist the given transient instance, first assigning a generated identifier
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public void save(Object object) {
         if (object == null) {
@@ -213,6 +250,11 @@ public class Session implements SessionIF{
             throw new InvalidEntityException("Your Entity does not match your table.");
         }
     }
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public Object get(Object id) {
         try {
@@ -243,13 +285,21 @@ public class Session implements SessionIF{
             throw new RuntimeException("Was not able to invoke the method");
         }
     }
-
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public List<Object> getAll() {
         return entityLinkedList;
     }
 
-    // Update any column that ISN'T the key
+    /**
+     *
+     *
+     * @return
+     * */
     @Override
     public void update(Object object) {
 
@@ -353,7 +403,11 @@ public class Session implements SessionIF{
 
     }
 
-    // Method to return a LinkedList of Objects
+    /**
+     *
+     *
+     * @return
+     * */
     private LinkedList<Object> mapResultSet(ResultSet rs) throws SQLException {
         try {
             LinkedList<Object> objects = new LinkedList<>();

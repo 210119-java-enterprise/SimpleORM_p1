@@ -7,22 +7,13 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ *
+ *
+ *
+ * @author Daniel Skwarcha
+ * @version %I% %G%
+ * */
 public @interface Entity {
 
-    /*
-    *
-    *
-    * Annotate all your entity beans with @Entity.
-
-1
-2
-3
-4
-
-@Entity
-public class Company implements Serializable {
-...
-}
-    *
-    * */
 }

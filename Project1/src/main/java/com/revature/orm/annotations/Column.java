@@ -7,32 +7,23 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Column {
-    public String columnName();
-}
 
-
-/*
+/**
 *
-* Specify the column mapping using @Column annotation.
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-@Entity
-@Table(name = "company")
-public class Company implements Serializable {
-
-  @Column(name = "name")
-  private String name;
-
-...
-}
 *
+*
+* @author Daniel Skwarcha
+* @version %I% %G%
 * */
+public @interface Column {
+
+    /**
+    *
+    *
+    * @return
+    * */
+    String columnName();
+}
+
+
+
