@@ -12,7 +12,7 @@ public class OrmDriver {
 
     public static void main(String[] args) {
 
-        sessionFactoryIF = new AnnotationConfiguration().configure("jdbc:postgresql://java-enterprise-2101192.cb6ljnanwiyj.us-east-2.rds.amazonaws.com:5432/P1DB","postgres","Revature2020!")
+        sessionFactoryIF = new AnnotationConfiguration().configure("src/main/java/com/revature/orm/models/application.properties")
                 .addPackage("com.revature.orm.models").addAnnotatedClass(User.class).buildSessionFactory();
 
         SessionIF sessionIF = sessionFactoryIF.openSession();
@@ -23,7 +23,7 @@ public class OrmDriver {
         user.setAge(30);
 
       // sessionIF.save(user);
-       user.setFirstName("Seco");
+       user.setFirstName("Sco");
 //
 //        sessionIF.close();
 //

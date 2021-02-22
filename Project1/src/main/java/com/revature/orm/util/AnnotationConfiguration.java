@@ -30,37 +30,29 @@ public class AnnotationConfiguration {
     public AnnotationConfiguration() {
         super();
     }
-    // DELETE AFTER YOU SUCCESSFULLY GET THIS TO WORK. WILL BE RELYING ON PROPERTIES FILE
-    public AnnotationConfiguration configure(String url, String username, String password) {
-        //BasicConnectionPool basicConnectionPool = new BasicConnectionPool();
+
+    // WILL USE THIS AFTER I DETERMINE THAT THE CONNECTION WORKS. REMEMBER TO COMMENT OUT THE CODE IN BASIC CONNECTION POOL THAT GRABS FROM THE PROPERTIES FILE
+    public AnnotationConfiguration configure(){
         try {
-            connectionPool = BasicConnectionPool.create(url, username, password);
+            connectionPool = BasicConnectionPool.create();
             return this;
         }catch(SQLException e) {
             e.printStackTrace();
             throw new InvalidConnectionException();
         }
+
     }
-    // WILL USE THIS AFTER I DETERMINE THAT THE CONNECTION WORKS. REMEMBER TO COMMENT OUT THE CODE IN BASIC CONNECTION POOL THAT GRABS FROM THE PROPERTIES FILE
-//    public AnnotationConfiguration configure(){
-//        try {
-//            connectionPool = BasicConnectionPool.create();
-//            return new AnnotationConfiguration(connectionPool);
-//        }catch(SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
-//    public AnnotationConfiguration configure(String propertiesPath) {
-//        try {
-//            connectionPool = BasicConnectionPool.create(propertiesPath);
-//            return new AnnotationConfiguration(connectionPool);
-//        }catch(SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//
-//    }
+    public AnnotationConfiguration configure(String propertiesPath) {
+        try {
+            connectionPool = BasicConnectionPool.create(propertiesPath);
+            return this;
+        }catch(SQLException e) {
+            e.printStackTrace();
+            throw new InvalidConnectionException();
+        }
+
+
+    }
     // Will probably need this because the developer will organize their classes into packages. Read package level metadata, accepts the package name as a string and returns
     // the annotationconfiguration object
     public AnnotationConfiguration addPackage(String packageName){
