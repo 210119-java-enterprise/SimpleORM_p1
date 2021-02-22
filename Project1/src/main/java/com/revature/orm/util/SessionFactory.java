@@ -49,7 +49,7 @@ public class SessionFactory implements SessionFactoryIF {
     // For now, I won't have a discriminator, but I might try to find a way to have one later.
     public SessionIF openSession() {
 
-        SessionIF sessionIF = Session.create(connectionPool.getConnection(), metamodelIF);
+        SessionIF sessionIF = Session.create(connectionPool, connectionPool.getConnection(), metamodelIF);
 
         return sessionIF;
 

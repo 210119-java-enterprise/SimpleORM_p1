@@ -16,17 +16,17 @@ import java.util.List;
 public class Session implements SessionIF{
 
     private Connection connection;
+    private ConnectionPool connectionPool;
     private MetamodelIF metamodelIF;
-    private Transaction transaction;
     private LinkedList<Object> entityLinkedList;
 
     private Session() {
         super();
     }
-    private Session(Connection connection, MetamodelIF metamodelIF){
+    private Session(ConnectionPool connectionPool, Connection connection, MetamodelIF metamodelIF){
+        this.connectionPool = connectionPool;
         this.connection = connection;
         this.metamodelIF = metamodelIF;
-        transaction = null;
 
         // You have the meta model. You just need to check if the primary key and columns are correct. You can do this my getting the id field and getting each individual column. Remember to check the id's type and each column's type and that
         // it matches with the table's types.
@@ -74,63 +74,68 @@ public class Session implements SessionIF{
 
     }
 
-    public static Session create(Connection connection, MetamodelIF metamodelIF){
+    public static Session create(ConnectionPool connectionPool, Connection connection, MetamodelIF metamodelIF){
 
-        return new Session(connection, metamodelIF);
-
-    }
-    // Begin a unit of work and return the assocated Transaction object. If a new underlying transaction is required, begin the transaction. Otherwise continue the new work in the
-    // context of the existing underlying transaction. The class of the returned Transaction object is determined by the property hibernate.transaction_factory (Ignore that part)
-    @Override
-    public Transaction beginTransaction() {
-        if(transaction == null) {
-
-            transaction = new JDBCTransaction(this);
-        }
-
-        return transaction;
+        return new Session(connectionPool, connection, metamodelIF);
 
     }
-    // Get the Transaction instance associated with this session. The class of the returned Transaction object is determined by the property hibernate.transaction_factory
-    @Override
-    public Transaction getTransaction() {
 
-    }
+
     // Completely clear the session. Does this mean there is more associated with the session then just the connection?
     @Override
     public void clear() {
+        connectionPool.releaseConnection(connection);
         connection = null;
+        metamodelIF = null;
+        entityLinkedList = null;
+
     }
     // A little confused by this one. It says to End the session by releasing the JDBC connection and cleaning up. Why do I return the connection associated with this session then?
     @Override
     public Connection close() {
-
+        connectionPool.releaseConnection(connection);
+        return connection;
 
     }
     // Remove a persistent instance from the datastore. I don't know how well this will work, since I only get an object and I don't know how I am going to delete a specific
     // row from the data or if this is just used to delete an entire table data or the table itself?
     @Override
     public void delete(Object object) {
+        if(object == null) {
+            return;
+        }
 
-    }
-    // Remove a persistent instance from the datastore. Same issue with delete. I do understand you can name the entity a different name from the table.
-    @Override
-    public void delete(String entityName, Object object) {
+        String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+        String sql = "DELETE FROM " + tableName + "WHERE ? = ?";
+        try {
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
 
-    }
-    // Disconnect the Session from the current JDBC connection
-    @Override
-    public Connection disconnect() {
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    pstmt.setObject(2, method.invoke(object));
+                    break;
+                }
+            }
+            int rowsAffected = pstmt.executeUpdate();
+            if(rowsAffected == 0) {
+                throw new RuntimeException("For some reason the data was not deleted from the row");
+            }
+            entityLinkedList.remove(object);
 
-    }
-    // Check if the session is still open
-    @Override
-    public boolean isOpen() {
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new InvalidEntityException("Your Entity does not match your table.");
+        }
 
     }
     // Persist the given transient instance, first assigning a generated identifier
     @Override
     public void save(Object object) {
+        if (object == null) {
+            return;
+        }
 
         int numColumns = 1;
         if (metamodelIF.getColumnFieldList() != null) {
@@ -173,47 +178,136 @@ public class Session implements SessionIF{
             if(rowsInserted == 0) {
                 throw new RuntimeException("For some reason the data was not saved to the table");
             }
-
+            entityLinkedList.add(object);
         } catch (Exception e) {
             e.printStackTrace();
             throw new InvalidEntityException("Your Entity does not match your table.");
         }
     }
-    // Persist the given transient instance, first assigning a generated identifier
     @Override
-    public Serializable save(String entityName, Object object) {
+    public Object get(Object id) {
+        try {
+            Method method = null;
+            if(id == null)
+            {
+                return null;
+            }
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    break;
+                }
+            }
 
+            for (int i = 0; i < entityLinkedList.size(); i++) {
+                Object o = entityLinkedList.get(i);
+                if(method.invoke(o).equals(id))
+                {
+                    return o;
+                }
+
+            }
+            return null;
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Was not able to invoke the method");
+        }
     }
-    // Create a new instance of SQLQuery for the given SQL guery string. For me, I am just going to make a prepared statement from this String
+
     @Override
-    public String createSQLQuery(String queryString) {
-
-    }
-    @Override
-    public Object get(Class clazz, Serializable id) {
-
-    }
-    @Override
-    public Object get(String entityName, Serializable id) {
-
+    public List<Object> getAll() {
+        return entityLinkedList;
     }
 
-//    //
-//    @Override
-//    public void create(Object object) {
-//
-//    }
-//    @Override
-//    public void read() {
-//
-//    }
-//    @Override
-//    public void readAll(String table) {
-//
-//    }
+    // Update any column that ISN'T the key
     @Override
     public void update(Object object) {
-metamodelIF.getEntityClass().
+
+        if (object == null) {
+            return;
+        }
+
+        int numColumns = 1;
+        if (metamodelIF.getColumnFieldList() != null) {
+            numColumns += metamodelIF.getColumnFieldList().size();
+        }
+        String numQuestionMarks = new String(new char[numColumns]).replace("\0","? = ?,");
+        numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
+        String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
+        String sql = "UPDATE " + tableName + " SET " + numQuestionMarks +" WHERE ? = ?";
+        try {
+
+
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
+
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    pstmt.setObject(2, method.invoke(object));
+                    break;
+                }
+            }
+
+            int currentParameterIndex = 3;
+            for (int i = 2; i <= numColumns; i++) {
+                ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
+                pstmt.setString(currentParameterIndex, columnField1.getColumnName());
+                currentParameterIndex+=1;
+                    for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
+                        Method method = (Method) metamodelIF.getGetterMethods().get(j);
+                        if (method.getName().equals("get" + columnField1.getName())) {
+                            pstmt.setObject(currentParameterIndex, method.invoke(object));
+                            currentParameterIndex+=1;
+                            break;
+                        }
+                    }
+            }
+
+            pstmt.setString(currentParameterIndex, metamodelIF.getIdField().getColumnName());
+            currentParameterIndex+=1;
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    pstmt.setObject(currentParameterIndex, method.invoke(object));
+                    break;
+                }
+            }
+
+
+
+
+
+            int rowsUpdated = pstmt.executeUpdate();
+            if(rowsUpdated == 0) {
+                throw new RuntimeException("For some reason the data was not updated to the table");
+            }
+
+
+            Method method = null;
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                method = (Method) metamodelIF.getSetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    break;
+                }
+            }
+
+            Object id = method.invoke(object);
+            for (int i = 0; i < entityLinkedList.size(); i++) {
+                Object o = entityLinkedList.get(i);
+                if(method.invoke(o).equals(id))
+                {
+                    entityLinkedList.remove(i);
+                    entityLinkedList.add(object);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new InvalidEntityException("Your Entity does not match your table.");
+        }
+
     }
 
     // Method to return a LinkedList of Objects
