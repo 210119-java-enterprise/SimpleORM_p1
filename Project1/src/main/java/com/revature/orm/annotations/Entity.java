@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  *
  *
- *
+ * An annotation marking a class an an Entity
  * @author Daniel Skwarcha
  * @version %I% %G%
  * */

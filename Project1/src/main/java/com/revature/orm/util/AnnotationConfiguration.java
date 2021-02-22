@@ -14,9 +14,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 /**
- *
- *
- *
+ * A class that contains fields and methods needed to set up
+ * the SessionFactoryIF, ConnectionPool, MetaModelIF, and classPath
  * @author Daniel Skwarcha
  * @version %I% %G%
  * */
@@ -25,20 +24,18 @@ public class AnnotationConfiguration {
     private MetamodelIF metamodelIF = null;
     private String classPath = null;
     /**
-     *
-     *
-     * @return
+     * A no-args default constructor that called super()
      * */
     public AnnotationConfiguration() {
         super();
     }
 
     /**
-     *
-     *
-     * @return
+     * A method used to set up the connectionPool
+     * by setting the connectionPool field to
+     * a static create method in BasicConnectionPool
+     * @return current AnnotationConfiguration
      * */
-    // WILL USE THIS AFTER I DETERMINE THAT THE CONNECTION WORKS. REMEMBER TO COMMENT OUT THE CODE IN BASIC CONNECTION POOL THAT GRABS FROM THE PROPERTIES FILE
     public AnnotationConfiguration configure(){
         try {
             connectionPool = BasicConnectionPool.create();
@@ -51,8 +48,13 @@ public class AnnotationConfiguration {
     }
     /**
      *
-     *
-     * @return
+     * A method used to set up the connectionPool by setting
+     * the connectionPool field to a static create method
+     * in BasicConnectionPool. This method accepts a String
+     * that tells the program where the properties file is
+     * located in the project
+     * @param String propertiesPath
+     * @return current AnnotationConfiguration
      * */
     public AnnotationConfiguration configure(String propertiesPath) {
         try {
@@ -67,34 +69,25 @@ public class AnnotationConfiguration {
     }
     /**
      *
-     *
-     * @return
+     * A method used to add a package path to the class path
+     * while also checking that the package actual exists
+     * @param String packageName
+     * @return current AnnotationConfiguration
      * */
     public AnnotationConfiguration addPackage(String packageName){
 
-        // I am concatenating two strings, the original classpath and the package that the class will be located in
-        // I think I should check to make sure this packageName actually exists and return if it doesn't. Figure out how to do that!!!
-        // MAKE SURE THE DEVELOPERS KNOW THAT THEY NEED TO INCLUDE ANY PACKAGES THAT THE CLASS IS CONTAINED IN THAT OCCUR AFTER THE JAVA FILE.
-        // I am going to try to use the forPackage method that is part of ClasspathHelper, but I am having trouble figuring out what it accepts. It says that is searches for the package name as a resource, using ClassLoader.getResrouces(String)
-        // For example, forPackage(org.reflections) effectively returns URLs from the classpath containing packages starting with org.reflections. Remember, it does not return null, so just check if the collection is empty
         if(packageName == null || packageName.trim().equals(""))
         {
-            // I just want to make sure they know that they should make sure to include a value. I want to use my own exceptions to make sure they know what they did wrong and how to fix it.
             throw new InvalidParametersException("Invalid package name. The package name passed was either null or empty");
         }
         classPath = packageName;
-
-
         Collection<URL> URLsContainingPackagesStartingWithTheClassPath = ClasspathHelper.forPackage(classPath);
         if (URLsContainingPackagesStartingWithTheClassPath.isEmpty())
         {
-            // I want to make sure that the packagename actually exists. If this collection is empty, then there are no URLs from the classpath containing packages starting with the packageName
             throw new InvalidClassPathException("Invalid package name. The package name passed '" + packageName + "' cannot be found or doesn't exist.");
         }
 
-
         return this;
-
     }
     /**
      *

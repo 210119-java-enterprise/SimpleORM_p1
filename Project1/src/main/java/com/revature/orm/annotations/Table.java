@@ -10,15 +10,13 @@ import java.lang.annotation.Target;
 /**
  *
  *
- *
+ * An annotation marking the table name for an entity
  * @author Daniel Skwarcha
  * @version %I% %G%
  * */
 public @interface Table {
     /**
-     *
-     *
-     * @return
+     * A required method that denotes the name of the table/entity
      * */
     String tableName();
 

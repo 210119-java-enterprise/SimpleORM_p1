@@ -9,18 +9,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 
 /**
-*
-*
-*
+* An annotation marking a field as a table column
 * @author Daniel Skwarcha
 * @version %I% %G%
 * */
 public @interface Column {
 
     /**
-    *
-    *
-    * @return
+    * A required method that denotes the name of the column
     * */
     String columnName();
 }

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  *
  *
- *
+ * An annotaiton marking an Entity with no columns/ only a primary key/id
  * @author Daniel Skwarcha
  * @version %I% %G%
  * */

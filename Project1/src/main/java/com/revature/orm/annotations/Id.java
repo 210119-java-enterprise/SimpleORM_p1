@@ -10,15 +10,13 @@ import java.lang.annotation.Target;
 /**
  *
  *
- *
+ * An annotaiton marking a field as an Id/Primary Key
  * @author Daniel Skwarcha
  * @version %I% %G%
  * */
 public @interface Id {
     /**
-     *
-     *
-     * @return
+     * A required method that denotes the name of the id
      * */
     String columnName();
 }
