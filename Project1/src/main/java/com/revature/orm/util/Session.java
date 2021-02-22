@@ -109,17 +109,38 @@ public class Session implements SessionIF{
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 Method method = (Method) metamodelIF.getGetterMethods().get(i);
                 if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
-                    querySQL = querySQL + method.invoke(object);
+                    if(metamodelIF.getIdField().getType().toString().equals("class java.lang.String") || metamodelIF.getIdField().getType().toString().equals("class java.lang.Character")) {
+                        querySQL = querySQL + "'" + method.invoke(object) + "'";
+                    }
+                    else {
+                        querySQL = querySQL + method.invoke(object);
+                    }
                     break;
                 }
             }
-            System.out.println(querySQL);
+
             int rowsAffected = statement.executeUpdate(querySQL);
             if(rowsAffected == 0) {
                 throw new RuntimeException("For some reason the data was not deleted from the row");
             }
-            entityLinkedList.remove(object);
 
+            Method method = null;
+            for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
+                method = (Method) metamodelIF.getGetterMethods().get(i);
+                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                    break;
+                }
+            }
+
+            Object id = method.invoke(object);
+            for (int i = 0; i < entityLinkedList.size(); i++) {
+                Object o = entityLinkedList.get(i);
+                if(method.invoke(o).equals(id))
+                {
+                    entityLinkedList.remove(i);
+                    break;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new InvalidEntityException("Your Entity does not match your table.");
@@ -137,33 +158,27 @@ public class Session implements SessionIF{
         if (metamodelIF.getColumnFieldList() != null) {
             numColumns += metamodelIF.getColumnFieldList().size();
         }
-        System.out.println(numColumns);
-        String numQuestionMarks = new String(new char[numColumns]).replace("\0","?,");
-        numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
         String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
         String querySQL = "INSERT INTO " + tableName + "(";
-        String sql = "INSERT INTO " + tableName + "(" + numQuestionMarks +") " + "VALUES (" + numQuestionMarks + ")";
         try {
             Statement statement = connection.createStatement();
-            PreparedStatement pstmt = connection.prepareStatement(sql);
             querySQL = querySQL + metamodelIF.getIdField().getColumnName();
-            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
 
 
             for (int i = 2; i <= numColumns; i++) {
                 ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
                 querySQL = querySQL + "," + columnField1.getColumnName();
-                pstmt.setString(i, columnField1.getColumnName());
             }
             querySQL = querySQL + ") VALUES (";
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 Method method = (Method) metamodelIF.getGetterMethods().get(i);
-                System.out.println(method.getName().toLowerCase(Locale.ROOT));
-                System.out.println(metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT));
                 if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
-                    System.out.println("I made it!!! ");
-                    querySQL = querySQL +  method.invoke(object);
-                    pstmt.setObject(numColumns + 1, method.invoke(object));
+                    if(metamodelIF.getIdField().getType().toString().equals("class java.lang.String") || metamodelIF.getIdField().getType().toString().equals("class java.lang.Character")) {
+                        querySQL = querySQL + "'" + method.invoke(object) + "'";
+                    }
+                    else {
+                        querySQL = querySQL +  method.invoke(object);
+                    }
                     break;
                 }
             }
@@ -173,7 +188,6 @@ public class Session implements SessionIF{
                 for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
                     Method method = (Method) metamodelIF.getGetterMethods().get(j);
                     if (method.getName().toLowerCase(Locale.ROOT).equals("get" + columnField1.getName().toLowerCase(Locale.ROOT))) {
-                        System.out.println(columnField1.getType());
                         if(columnField1.getType().toString().equals("class java.lang.String") || columnField1.getType().toString().equals("class java.lang.Character"))
                         {
                             querySQL = querySQL + ",'" + method.invoke(object) + "'";
@@ -182,17 +196,14 @@ public class Session implements SessionIF{
                             querySQL = querySQL + "," + method.invoke(object);
                         }
 
-                        pstmt.setObject(numColumns + 2 + (i - 2), method.invoke(object));
                         break;
                     }
                 }
             }
             querySQL = querySQL + ")";
-            System.out.println(querySQL);
-            System.out.println(pstmt.toString());
+
             int rowsInserted = statement.executeUpdate(querySQL);
 
-            //int rowsInserted = pstmt.executeUpdate();
             if(rowsInserted == 0) {
                 throw new RuntimeException("For some reason the data was not saved to the table");
             }
@@ -250,20 +261,23 @@ public class Session implements SessionIF{
         if (metamodelIF.getColumnFieldList() != null) {
             numColumns += metamodelIF.getColumnFieldList().size();
         }
-        String numQuestionMarks = new String(new char[numColumns]).replace("\0","? = ?,");
-        numQuestionMarks = numQuestionMarks.substring(0,numQuestionMarks.length()-1); // Have to do this in order to get rid of last , in the string
         String tableName = metamodelIF.getTableClass() != null ? metamodelIF.getTableClass().getTableName() : metamodelIF.getEntityClass().getName();
-        String sql = "UPDATE " + tableName + " SET " + numQuestionMarks +" WHERE ? = ?";
+        String querySQL = "UPDATE " + tableName + " SET ";
         try {
 
-
-            PreparedStatement pstmt = connection.prepareStatement(sql);
-            pstmt.setString(1, metamodelIF.getIdField().getColumnName());
+            Statement statement = connection.createStatement();
+            querySQL = querySQL + metamodelIF.getIdField().getColumnName();
 
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                Method method = (Method) metamodelIF.getGetterMethods().get(i);
                 if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
-                    pstmt.setObject(2, method.invoke(object));
+                    if(metamodelIF.getIdField().getType().toString().equals("class java.lang.String") || metamodelIF.getIdField().getType().toString().equals("class java.lang.Character")) {
+                        querySQL = querySQL + " = " + "'" + method.invoke(object) + "'";
+                    }
+                    else
+                    {
+                        querySQL = querySQL + " = " + method.invoke(object);
+                    }
                     break;
                 }
             }
@@ -271,33 +285,44 @@ public class Session implements SessionIF{
             int currentParameterIndex = 3;
             for (int i = 2; i <= numColumns; i++) {
                 ColumnField columnField1 = (ColumnField)metamodelIF.getColumnFieldList().get(i-2);
-                pstmt.setString(currentParameterIndex, columnField1.getColumnName());
+                querySQL = querySQL + ", " + columnField1.getColumnName();
                 currentParameterIndex+=1;
                     for (int j = 0; j < metamodelIF.getGetterMethods().size(); j++) {
                         Method method = (Method) metamodelIF.getGetterMethods().get(j);
                         if (method.getName().toLowerCase(Locale.ROOT).equals("get" + columnField1.getName().toLowerCase(Locale.ROOT))) {
-                            pstmt.setObject(currentParameterIndex, method.invoke(object));
+                            if(columnField1.getType().toString().equals("class java.lang.String") || columnField1.getType().toString().equals("class java.lang.Character")) {
+                                querySQL = querySQL + " = " + "'" + method.invoke(object) + "'";
+                            }
+                            else
+                            {
+                                querySQL = querySQL + " = " + method.invoke(object);
+                            }
                             currentParameterIndex+=1;
                             break;
                         }
                     }
             }
 
-            pstmt.setString(currentParameterIndex, metamodelIF.getIdField().getColumnName());
+            querySQL = querySQL + " WHERE " + metamodelIF.getIdField().getColumnName();
             currentParameterIndex+=1;
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                Method method = (Method) metamodelIF.getSetterMethods().get(i);
+                Method method = (Method) metamodelIF.getGetterMethods().get(i);
                 if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
-                    pstmt.setObject(currentParameterIndex, method.invoke(object));
+                    if(metamodelIF.getIdField().getType().toString().equals("class java.lang.String") || metamodelIF.getIdField().getType().toString().equals("class java.lang.Character")) {
+                        querySQL = querySQL + " = " + "'" + method.invoke(object) + "'";
+                    }
+                    else
+                    {
+                        querySQL = querySQL + " = " + method.invoke(object);
+                    }
                     break;
                 }
             }
 
 
 
-
-
-            int rowsUpdated = pstmt.executeUpdate();
+            int rowsUpdated = statement.executeUpdate(querySQL);
+            //int rowsUpdated = pstmt.executeUpdate();
             if(rowsUpdated == 0) {
                 throw new RuntimeException("For some reason the data was not updated to the table");
             }
@@ -305,7 +330,7 @@ public class Session implements SessionIF{
 
             Method method = null;
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                method = (Method) metamodelIF.getSetterMethods().get(i);
+                method = (Method) metamodelIF.getGetterMethods().get(i);
                 if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
                     break;
                 }

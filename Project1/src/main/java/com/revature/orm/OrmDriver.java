@@ -22,7 +22,8 @@ public class OrmDriver {
         user.setLastName("Last");
         user.setAge(30);
 
-//        sessionIF.save(user);
+      // sessionIF.save(user);
+       user.setFirstName("Seco");
 //
 //        sessionIF.close();
 //
@@ -32,9 +33,11 @@ public class OrmDriver {
 //        sessionIF.close();
 //
 //        sessionIF = sessionFactoryIF.openSession();
-        sessionIF.delete(user);
-
+        //sessionIF.delete(user);
+        sessionIF.update(user);
         sessionIF.close();
+
+
 
 
 

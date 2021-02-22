@@ -103,7 +103,6 @@ public class AnnotationConfiguration {
         if(clazz == null) {
             throw new InvalidParametersException("Invalid class name. The class name passed was null.");
         }
-        System.out.println(classPath);
         Reflections reflections = new Reflections(classPath);
 
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class); //Bug with version 0.9.12, switching to version 0.9.11
