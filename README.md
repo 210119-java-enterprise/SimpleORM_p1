@@ -1,4 +1,8 @@
 # SimpleORM_p1
+## Configuration (POM File)
+## Configuration (application.properties file)
+## Configuration (Annotations)
+## 
 This is an ORM that wraps the JDBC and allows you to implement CRUD functionality.
 
 Setup
