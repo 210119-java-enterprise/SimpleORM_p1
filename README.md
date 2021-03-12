@@ -32,7 +32,6 @@ This project is a simple ORM. That means you are able to communicate between you
 dependency used in this ORM is 42.2.12 which works with PostgreSQL 8.2 and higher using the version 3.0 of the protocol.
 
 1. git clone https://github.com/210119-java-enterprise/SimpleORM_p1.git
-	Builds the project described by your Maven POM file and installs the resulting artifact (JAR) into your local Maven repository
 2. cd into SimpleORM_p1
 3. cd into Project1
 4. mvn install (This is to build the project described by the local Maven POM file 
