@@ -97,11 +97,6 @@ public class Metamodel<T>{
                 columnFieldList.add(new ColumnField(field));
             }
         }
-
-        if (columnFieldList.isEmpty()) {
-
-            return null;
-        }
         return columnFieldList;
     }
     /**
