@@ -38,8 +38,8 @@ dependency used in this ORM is 42.2.12 which works with PostgreSQL 8.2 and highe
    within the Project1 directory and installs the resulting artifact (JAR) into your local Maven repository)
 5. You can now use the dependency.
 
-1. Inside your pom.xml file, include this dependency.
-        <dependency>
+1. Inside your pom.xml file, include this dependency:
+*        <dependency>
             <groupId>org.example</groupId>
             <artifactId>Project1</artifactId>
             <version>1.0-SNAPSHOT</version>
