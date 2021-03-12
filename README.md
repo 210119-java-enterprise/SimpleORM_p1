@@ -1,25 +1,3 @@
-# SimpleORM_p1
-## Configuration (POM File)
-## Configuration (application.properties file)
-## Annotations
-## Initialize
-This is an ORM that wraps the JDBC and allows you to implement CRUD functionality.
-
-Setup
-1. Include dependency within your POM file:
-        <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>Project1</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-2. Include an application.properties file either within your resources folder by default or somewhere else within your project. A url, admin-ur, and admin-pw should be set. The url refers to the URL of your database. The admin-ur is the username of your database. The admin-pw is the password of your database.
-Model
-1. Your model will contain Annotations required to use the ORM. The minimum Annotations required are @Entity over your model and @Id for your primary key. A no-args constructor is required as well as a getter and setter for your primary key.
-2. Here is an example model:
-
-
-
-
 # Project 1 - Custom Object Relational Mapping Framework
 
 ## Project Description
@@ -44,8 +22,8 @@ List of features ready and TODOs for future development
 * Session-based caching to minimize calls to the database
 
 To-do list:
-* Fix delete method on session so the object is properly deleted within the session cache. Will not have to close the session and reopen it in order to see the updated list.
-* Fix the update method on session so the object is properly updated within the session cache. Will not have to close the session and reopen it in order to see the updated list.
+* Allow for more than 1 Entity class per SessionFactoryIF
+* Implement foriegn key references
 * Add transactions to the ORM. Would like to give the developer the chance to not immediately update the database records and wait until they commit those records.
 
 ## Getting Started
@@ -60,7 +38,7 @@ dependency used in this ORM is 42.2.12 which works with PostgreSQL 8.2 and highe
 4. mvn install (This is to build the project described by the local Maven POM file 
    within the Project1 directory and installs the resulting artifact (JAR) into your local Maven repository)
 5. You can now use the dependency.
-(include all environment setup steps)
+
 1. Inside your pom.xml file, include this dependency.
         <dependency>
             <groupId>org.example</groupId>
@@ -82,17 +60,52 @@ dependency used in this ORM is 42.2.12 which works with PostgreSQL 8.2 and highe
    table.
 2. Create a Java class representing a table in your database.
 3. Use the appropriate annotations in your class to correctly mark your class as well as your fields.
-* @Column marks a field as a column of your table. Provide column name your are referencing within this annotation.
-* @Entity marks a class as an Entity.
-* @Id marks a field as a primary key. Only 1 is allowed per class.
-* @No Columns
+* @Column marks a field as a column of your table. Provide column name your are referencing within this annotation. REQUIRED unless using @NoColumns
+* @Entity marks a class as an Entity. REQUIRED
+* @Id marks a field as a primary key. Only 1 is allowed per class. REQUIRED
+* @NoColumns marks an Entity as having no other columns except the primary key.
+* @Table marks an Entity's table name. REQUIRED.
+4. Create a no argument constructor
+5. Create getters and setters for your field(s). They must start with get or set respectively and have the field name. Case does not matter.
+6. Example of a class with a primary key and columns
 
-> Here, you instruct other people on how to use your project after they’ve installed it. This would also be a good place to include screenshots of your project in action.
+![image](https://user-images.githubusercontent.com/77693248/110892206-9d0b6200-82c1-11eb-883d-143b7ebc2dd7.png)
 
-## Contributors
+7. Example of a class with a primary key and no columns:
 
-> Here list the people who have contributed to this project. (ignore this section, if its a solo project)
+![image](https://user-images.githubusercontent.com/77693248/110892282-c4fac580-82c1-11eb-88ba-58a394f26899.png)
+
+8. Set the SessionFactoryIF fieldName = new AnnotationConfiguration().configure().addPackage("your entity class directory path").addAnnotatedClass(YourEntityClass.class).buildSessionFactory();
+9. 1 SessionFactoryIF per Entity Class
+10. Example of SessionFactoryIF setup:
+
+![image](https://user-images.githubusercontent.com/77693248/110892692-83b6e580-82c2-11eb-86fb-7c852f6a6e0f.png)
+
+NOTE: Entity directory starts at src/main/java. If your entity class is located within that directory, you do not need the addPackage method.
+
+11. Example of SessionFactoryIF setup without addPackage method:
+
+![image](https://user-images.githubusercontent.com/77693248/110893181-7cdca280-82c3-11eb-8775-df253577dcdf.png)
+
+12. Create a SessionIF object and open a session.
+
+![image](https://user-images.githubusercontent.com/77693248/110893433-f8d6ea80-82c3-11eb-8df6-f16687974768.png)
+
+13. Methods you can use from that SessionIF object:
+* close(), closes a session and releases all data stored locally. Need to create a new instance of a session with SessionFactoryIF object's openSession() method.
+* save(EntityObject), allows you to insert a new instance of your Entity Class into your table. Please include a key, since this ORM does not auto generate one.
+* getAll(), allows you to get all rows/instances of the entity
+* get(PrimaryKeyValue), gets the entity instance with that primary key value
+* delete(EntityObject), deletes the entity object.
+* update(EntityObject), updates the value of the entity object. Uses primary key to update the object, so cannot update the primary key.
+
+14. Remember to close the session when you are finished with it and close the SessionFactory when you are finished with it. Closing the SessionFactory releases the connection and metamodel.
+
+15. Example Driver that implements SimpleORM:
+
+![image](https://user-images.githubusercontent.com/77693248/110896843-638b2480-82ca-11eb-9408-14403e30666e.png)
 
 ## License
 
+Unknown.
 This project uses the following license: [<license_name>](<link>).
