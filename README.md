@@ -76,6 +76,9 @@ dependency used in this ORM is 42.2.12 which works with PostgreSQL 8.2 and highe
 ![image](https://user-images.githubusercontent.com/77693248/110892282-c4fac580-82c1-11eb-88ba-58a394f26899.png)
 
 8. Set the SessionFactoryIF fieldName = new AnnotationConfiguration().configure().addPackage("your entity class directory path").addAnnotatedClass(YourEntityClass.class).buildSessionFactory();
+NOTE: If your application.properties file is located somewhere other than the resources folder, you will need add the entire path to your to you
+      application.properties file as a string within the configure method starting from src. Example of this could be 
+      .configure("src/main/java/com/revature/model/application.properties")
 9. 1 SessionFactoryIF per Entity Class
 10. Example of SessionFactoryIF setup:
 
