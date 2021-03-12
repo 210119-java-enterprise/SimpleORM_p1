@@ -160,7 +160,7 @@ public class Session implements SessionIF{
             Method method = null;
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 method = (Method) metamodelIF.getGetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     break;
                 }
             }
@@ -264,7 +264,7 @@ public class Session implements SessionIF{
                 return null;
             }
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
-                method = (Method) metamodelIF.getSetterMethods().get(i);
+                method = (Method) metamodelIF.getGetterMethods().get(i);
                 if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     break;
                 }
@@ -381,7 +381,7 @@ public class Session implements SessionIF{
             Method method = null;
             for(int i = 0; i < metamodelIF.getGetterMethods().size(); i++) {
                 method = (Method) metamodelIF.getGetterMethods().get(i);
-                if (method.getName().equals("get" + metamodelIF.getIdField().getName())) {
+                if (method.getName().toLowerCase(Locale.ROOT).equals("get" + metamodelIF.getIdField().getName().toLowerCase(Locale.ROOT))) {
                     break;
                 }
             }
